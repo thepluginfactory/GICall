@@ -1,0 +1,59 @@
+{
+    "name": "fb-call-now",
+    "version": "3.0.1",
+    "description": "WordPress plugin build scripts for FB Call Now - floating call button with visibility controls",
+    "homepage": "https://github.com/johnrobins/fb-call-now",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/johnrobins/fb-call-now.git"
+    },
+    "bugs": {
+        "url": "https://github.com/johnrobins/fb-call-now/issues"
+    },
+    "engines": {
+        "node": ">=14.0.0",
+        "npm": ">=6.0.0"
+    },
+    "scripts": {
+        "make-pot": "wp i18n make-pot . languages/fb-call-now.pot --domain=fb-call-now --package-name=\"FB Call Now\"",
+        "build": "npm run clean && composer install --no-dev --optimize-autoloader && npm run make-pot",
+        "build-dev": "composer install && composer dump-autoload && npm run make-pot",
+        "dev": "composer install && composer dump-autoload",
+        "clean": "rm -rf vendor/ coverage/ composer.lock",
+        "lint:php": "composer cs-check",
+        "lint:php:fix": "composer cs-fix",
+        "test:php": "composer test",
+        "test:php:coverage": "composer test-coverage",
+        "test:compat": "composer compat-check",
+        "prepare": "composer install --no-dev --optimize-autoloader"
+    },
+    "devDependencies": {
+        "@wordpress/i18n": "^4.0.0"
+    },
+    "keywords": [
+        "wordpress",
+        "plugin",
+        "call-now",
+        "floating-button",
+        "click-to-call",
+        "phone-button",
+        "contact",
+        "business",
+        "mobile-responsive"
+    ],
+    "author": {
+        "name": "John Robins",
+        "email": "john@example.com",
+        "url": "https://github.com/johnrobins"
+    },
+    "license": "GPL-2.0-or-later",
+    "private": true,
+    "files": [
+        "assets/",
+        "includes/",
+        "languages/",
+        "fb-call-now.php",
+        "uninstall.php",
+        "readme.txt"
+    ]
+}

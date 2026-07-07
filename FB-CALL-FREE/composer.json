@@ -1,0 +1,64 @@
+{
+    "name": "johnrobins/fb-call-now",
+    "description": "WordPress plugin for floating call now button with basic and pro visibility controls",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "wordpress",
+        "plugin",
+        "call-now",
+        "floating-button",
+        "click-to-call",
+        "phone-button",
+        "contact"
+    ],
+    "authors": [
+        {
+            "name": "John Robins",
+            "email": "john@example.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/johnrobins/fb-call-now/issues",
+        "source": "https://github.com/johnrobins/fb-call-now"
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpcompatibility/php-compatibility": "^9.3"
+    },
+    "suggest": {
+        "ext-intl": "For improved internationalization support"
+    },
+    "autoload": {
+        "psr-4": {
+            "FBCallNow\\": "includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FBCallNow\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "cs-check": "phpcs --standard=WordPress includes/ fb-call-now.php",
+        "cs-fix": "phpcbf --standard=WordPress includes/ fb-call-now.php",
+        "compat-check": "phpcs -p includes/ fb-call-now.php --standard=PHPCompatibility --runtime-set testVersion 7.4-",
+        "post-install-cmd": "composer dump-autoload",
+        "post-update-cmd": "composer dump-autoload"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "classmap-authoritative": false,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

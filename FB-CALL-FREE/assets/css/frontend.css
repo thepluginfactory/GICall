@@ -1,0 +1,481 @@
+/**
+ * FB Call Now - Frontend Styles with Scroll Animation
+ * Version: 3.0.1
+ */
+
+/* Base call button styles */
+/* Base call button styles */
+.fbcn-call-button {
+    position: fixed;
+    z-index: 9999;
+    display: inline-flex;
+    /* Modern Flexbox */
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    /* Space between icon and text */
+    padding: 14px 20px;
+    border-radius: 34px;
+    /* Modern "SaaS" radius, not full pill */
+    text-decoration: none;
+    font-weight: 400;
+    font-family: inherit;
+    /* Use website default font */
+    /* Slightly bolder */
+    font-size: 16px;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    /* Smooth Transitions for morphing */
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    /* Softer shadow */
+    border: none;
+    white-space: nowrap;
+    user-select: none;
+    box-sizing: border-box;
+    /* Initial width auto */
+    width: auto;
+    max-width: 300px;
+    /* Safety */
+}
+
+/* Text and icon styles */
+.fbcn-button-text {
+    display: inline-block;
+    opacity: 1;
+    max-width: 200px;
+    /* Allow text */
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.fbcn-button-icon {
+    position: static;
+    /* Normal flow */
+    transform: scale(0);
+    opacity: 0;
+    margin: 0;
+    max-width: 0;
+    /* Hidden initially */
+    width: auto;
+    overflow: hidden;
+    /* Prevent text spill */
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: -1;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Scrolled state - transforms button into circle with icon */
+.fbcn-call-button.scrolled {
+    /* Circle Shape */
+    border-radius: 50% !important;
+    width: 56px !important;
+    /* Fixed dimension */
+    height: 56px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    /* Remove gap so icon centers */
+    justify-content: center;
+}
+
+/* Hide text when scrolled */
+.fbcn-call-button.scrolled .fbcn-button-text {
+    opacity: 0;
+    max-width: 0;
+    /* Collapse width */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.fbcn-call-button.scrolled .fbcn-button-icon {
+    /* Icon visible on scroll */
+    transform: scale(1.1);
+    opacity: 1;
+    max-width: 40px;
+    /* Allow width */
+}
+
+/* Hover and focus states */
+.fbcn-call-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Debug mode styles */
+.fbcn-call-button.fbcn-debug-mode {
+    border: 2px solid #00ff00;
+}
+
+.fbcn-call-button.fbcn-should-hide {
+    opacity: 0.3;
+    pointer-events: none;
+    border: 2px dashed #ff0000 !important;
+}
+
+/* Device visibility logic */
+/* Hide button by default on all devices */
+.fbcn-call-button {
+    display: none;
+}
+
+/* Desktop visibility (≥992px) - Show if has desktop class */
+@media (min-width: 992px) {
+    .fbcn-call-button.fbcn-show-desktop {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        padding: 12px 16px;
+        /* Set explicit width for smooth transition */
+        width: auto;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .fbcn-call-button.fbcn-show-desktop.scrolled {
+        padding: 12px !important;
+        width: 48px !important;
+        height: 48px !important;
+    }
+}
+
+/* Tablet visibility (768px-991px) - Show if has tablet class */
+@media (min-width: 768px) and (max-width: 991px) {
+    .fbcn-call-button.fbcn-show-tablet {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        padding: 10px 14px;
+        /* Set explicit width for smooth transition */
+        width: auto;
+        min-width: 42px;
+        min-height: 42px;
+    }
+
+    .fbcn-call-button.fbcn-show-tablet.scrolled {
+        /* Perfect circle: equal padding on all sides */
+        padding: 11px !important;
+        width: 42px !important;
+        height: 42px !important;
+    }
+
+    /* Tablet icon size */
+    .fbcn-call-button.fbcn-show-tablet .fbcn-button-icon {
+        font-size: 14px;
+    }
+}
+
+/* Mobile visibility (<768px) - Show if has mobile class */
+@media (max-width: 767px) {
+    .fbcn-call-button.fbcn-show-mobile {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        padding: 8px 12px;
+        /* Set explicit width for smooth transition */
+        width: auto;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .fbcn-call-button.fbcn-show-mobile.scrolled {
+        /* Perfect circle: equal padding on all sides */
+        padding: 10px !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    /* Mobile icon size */
+    .fbcn-call-button.fbcn-show-mobile .fbcn-button-icon {
+        font-size: 12px;
+    }
+}
+
+/* Force show in debug mode regardless of device settings */
+.fbcn-call-button.fbcn-debug-mode {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Force show if marked as should show (for debugging) */
+.fbcn-call-button.fbcn-should-show {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Accessibility improvements */
+.fbcn-call-button:focus {
+    outline: 2px solid #005a87;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .fbcn-call-button {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .fbcn-call-button {
+        transition: none;
+    }
+
+    .fbcn-button-text,
+    .fbcn-button-icon {
+        transition: none;
+    }
+
+    .fbcn-call-button:hover,
+    .fbcn-call-button:focus {
+        transform: none;
+    }
+}
+
+/* Print styles - hide button when printing */
+@media print {
+    .fbcn-call-button {
+        display: none !important;
+    }
+}
+
+/* Additional positioning utilities */
+.fbcn-call-button.fbcn-left {
+    left: 20px;
+}
+
+.fbcn-call-button.fbcn-right {
+    right: 20px;
+}
+
+/* Ensure button doesn't interfere with page content */
+.fbcn-call-button {
+    pointer-events: auto;
+}
+
+/* Style for when button is temporarily hidden/shown via JS */
+.fbcn-call-button.fbcn-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fbcn-call-button.fbcn-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Debug info styles for console output */
+.fbcn-call-button.fbcn-debug-mode::after {
+    content: "DEBUG";
+    position: absolute;
+    top: -20px;
+    right: 0;
+    background: #ff0000;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Modal overlay styles */
+.fbcn-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.fbcn-modal-overlay.fbcn-modal-show {
+    opacity: 1;
+}
+
+/* Modal content container */
+.fbcn-modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.fbcn-modal-overlay.fbcn-modal-show .fbcn-modal-content {
+    transform: scale(1);
+}
+
+/* Modal header */
+.fbcn-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f8f9fa;
+}
+
+.fbcn-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Modal close button */
+.fbcn-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.fbcn-modal-close:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+/* Modal body */
+.fbcn-modal-body {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+/* Phone display area */
+.fbcn-phone-display {
+    margin-bottom: 25px;
+}
+
+.fbcn-modal-icon {
+    font-size: 36px;
+    color: #007cba;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.fbcn-phone-number {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    word-break: break-all;
+}
+
+/* Copy button */
+.fbcn-copy-button {
+    background: #007cba;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fbcn-copy-button:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+.fbcn-copy-button:active {
+    transform: translateY(0);
+}
+
+/* Copy feedback message */
+.fbcn-copy-feedback {
+    margin-top: 15px;
+    color: #28a745;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive modal styles */
+@media (max-width: 480px) {
+    .fbcn-modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+
+    .fbcn-modal-header {
+        padding: 15px;
+    }
+
+    .fbcn-modal-body {
+        padding: 20px 15px;
+    }
+
+    .fbcn-phone-number {
+        font-size: 20px;
+    }
+
+    .fbcn-modal-icon {
+        font-size: 30px;
+    }
+}
+
+/* High contrast mode support for modal */
+@media (prefers-contrast: high) {
+    .fbcn-modal-content {
+        border: 2px solid #000;
+    }
+
+    .fbcn-copy-button {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion support for modal */
+@media (prefers-reduced-motion: reduce) {
+
+    .fbcn-modal-overlay,
+    .fbcn-modal-content {
+        transition: none;
+    }
+
+    .fbcn-copy-button:hover {
+        transform: none;
+    }
+}
+
+/* Print styles - hide modal when printing */
+@media print {
+    .fbcn-modal-overlay {
+        display: none !important;
+    }
+}
