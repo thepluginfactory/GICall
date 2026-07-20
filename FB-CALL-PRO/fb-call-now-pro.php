@@ -93,18 +93,23 @@ class FB_Call_Now_Pro {
      * Activate Pro features by defining the constant
      */
     private function activate_pro_features() {
-        // Define the constant that unlocks Pro features in the Free version
-        if (!defined('FBCN_PRO_ACTIVE')) {
-            define('FBCN_PRO_ACTIVE', true);
+        // Load license handler first
+        require_once FBCN_PRO_PLUGIN_DIR . 'includes/Licensing/License.php';
+        $license = new FBCallNowPro\Licensing\License();
+
+        // Always activate in admin so the settings page shows up.
+        // On frontend, only activate if the license is valid.
+        if (is_admin() || $license->is_valid()) {
+            if (!defined('FBCN_PRO_ACTIVE')) {
+                define('FBCN_PRO_ACTIVE', true);
+            }
         }
 
-        // Load license handler
-        require_once FBCN_PRO_PLUGIN_DIR . 'includes/Licensing/License.php';
-        new FBCallNowPro\Licensing\License();
-
         // Load Admin Settings (New UI)
-        require_once FBCN_PRO_PLUGIN_DIR . 'includes/Admin/ProSettings.php';
-        new FBCallNowPro\Admin\ProSettings();
+        if (is_admin()) {
+            require_once FBCN_PRO_PLUGIN_DIR . 'includes/Admin/ProSettings.php';
+            new FBCallNowPro\Admin\ProSettings();
+        }
     }
 
     /**

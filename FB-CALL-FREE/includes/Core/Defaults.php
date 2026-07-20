@@ -22,6 +22,7 @@ class Defaults {
             'phone_number' => '',
             'button_color' => '#007cba',
             'text_color' => '#ffffff',
+            'button_shape' => 'pill',
             'horizontal_position' => 'right',
             'vertical_position' => 10,
             'delete_data_on_uninstall' => false
@@ -36,6 +37,15 @@ class Defaults {
     public static function get_pro_settings() {
         return array(
             'days_visible' => array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'),
+            'time_windows' => array(
+                'monday'    => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'tuesday'   => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'wednesday' => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'thursday'  => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'friday'    => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'saturday'  => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+                'sunday'    => array('start' => '00:00', 'end' => '23:00', 'wrap' => false),
+            ),
             'start_time' => '00:00',
             'end_time' => '23:00',
             'wrap_to_next_day' => false,

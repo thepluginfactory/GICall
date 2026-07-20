@@ -40,6 +40,19 @@
     /* Safety */
 }
 
+/* Button Shapes */
+.fbcn-call-button.fbcn-shape-rectangular {
+    border-radius: 0;
+}
+
+.fbcn-call-button.fbcn-shape-rounded {
+    border-radius: 8px;
+}
+
+.fbcn-call-button.fbcn-shape-pill {
+    border-radius: 34px;
+}
+
 /* Text and icon styles */
 .fbcn-button-text {
     display: inline-block;

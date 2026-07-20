@@ -135,6 +135,11 @@ class ButtonRenderer {
         $device_visibility = $pro_settings['device_visibility'] ?? array('desktop', 'tablet', 'mobile');
         
         $css_classes = array('fbcn-call-button');
+        
+        // Add shape class
+        $button_shape = esc_attr($basic_settings['button_shape'] ?? 'pill');
+        $css_classes[] = 'fbcn-shape-' . $button_shape;
+        
         foreach ($device_visibility as $device) {
             $css_classes[] = 'fbcn-show-' . $device;
         }
@@ -226,8 +231,9 @@ class ButtonRenderer {
      * Check if button should be visible at current time
      */
     private function is_visible_now($pro_settings) {
-        $start_time = $pro_settings['start_time'] ?? '00:00';
-        $end_time = $pro_settings['end_time'] ?? '23:00';
+        $current_day = strtolower(wp_date('l'));
+        $start_time = $pro_settings['time_windows'][$current_day]['start_time'] ?? ($pro_settings['start_time'] ?? '00:00');
+        $end_time = $pro_settings['time_windows'][$current_day]['end_time'] ?? ($pro_settings['end_time'] ?? '23:00');
         $wrap_to_next_day = $pro_settings['wrap_to_next_day'] ?? false;
         
         // Get current time in site timezone

@@ -101,6 +101,17 @@ class Settings {
             );
         }
         
+        // Handle restore defaults action
+        if (isset($_POST['fbcn_restore_defaults']) && current_user_can('manage_options')) {
+            if (isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'fbcn_restore_defaults_nonce')) {
+                update_option('fbcn_basic_settings', Defaults::get_basic_settings());
+                if (defined('FBCN_PRO_ACTIVE') && FBCN_PRO_ACTIVE) {
+                    update_option('fbcn_pro_settings', Defaults::get_pro_settings());
+                }
+                add_settings_error('fbcn_basic_settings', 'settings_restored', __('Settings have been restored to defaults.', 'fb-call-now'), 'updated');
+            }
+        }
+        
         // Add settings sections and fields
         $this->add_basic_settings_fields();
         if (defined('FBCN_PRO_ACTIVE') && FBCN_PRO_ACTIVE) {
@@ -161,6 +172,15 @@ class Settings {
             'text_color',
             __('Text Color', 'fb-call-now'),
             array($this, 'text_color_field_callback'),
+            'fbcn_basic_settings',
+            'fbcn_basic_section'
+        );
+        
+        // Button Shape field
+        add_settings_field(
+            'button_shape',
+            __('Button Shape', 'fb-call-now'),
+            array($this, 'button_shape_field_callback'),
             'fbcn_basic_settings',
             'fbcn_basic_section'
         );
@@ -269,6 +289,9 @@ class Settings {
         $sanitized['button_color'] = sanitize_hex_color($input['button_color'] ?? '#007cba') ?: '#007cba';
         $sanitized['text_color'] = sanitize_hex_color($input['text_color'] ?? '#ffffff') ?: '#ffffff';
         
+        // Shape
+        $sanitized['button_shape'] = in_array($input['button_shape'] ?? 'pill', array('rectangular', 'rounded', 'pill')) ? $input['button_shape'] : 'pill';
+        
         // Positions
         $sanitized['horizontal_position'] = in_array($input['horizontal_position'] ?? 'right', array('left', 'right')) ? $input['horizontal_position'] : 'right';
         $sanitized['vertical_position'] = max(1, min(10, absint($input['vertical_position'] ?? 10)));
@@ -328,29 +351,42 @@ class Settings {
     private function sanitize_time_window($input) {
         $sanitized = array();
         
-        // Sanitize individual time values
+        $sanitized['wrap_to_next_day'] = isset($input['wrap_to_next_day']) ? true : false;
+        
+        // Handle global fallback (if still used somewhere)
         $start_time = sanitize_text_field($input['start_time'] ?? '00:00');
         $end_time = sanitize_text_field($input['end_time'] ?? '23:00');
         
-        // Validate time format
-        if (preg_match('/^([0-1][0-9]|2[0-3]):00$/', $start_time)) {
-            $sanitized['start_time'] = $start_time;
-        } else {
-            $sanitized['start_time'] = '00:00';
-        }
+        $sanitized['start_time'] = preg_match('/^([0-1][0-9]|2[0-3]):00$/', $start_time) ? $start_time : '00:00';
+        $sanitized['end_time'] = preg_match('/^([0-1][0-9]|2[0-3]):00$/', $end_time) ? $end_time : '23:00';
         
-        if (preg_match('/^([0-1][0-9]|2[0-3]):00$/', $end_time)) {
-            $sanitized['end_time'] = $end_time;
-        } else {
-            $sanitized['end_time'] = '23:00';
-        }
+        // Handle per-day time windows
+        $valid_days = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        $sanitized['time_windows'] = array();
         
-        // Handle wrap to next day setting
-        $wrap_to_next_day = isset($input['wrap_to_next_day']) ? true : false;
-        $sanitized['wrap_to_next_day'] = $wrap_to_next_day;
+        if (isset($input['time_windows']) && is_array($input['time_windows'])) {
+            foreach ($valid_days as $day) {
+                if (isset($input['time_windows'][$day])) {
+                    $day_start = sanitize_text_field($input['time_windows'][$day]['start_time'] ?? '00:00');
+                    $day_end = sanitize_text_field($input['time_windows'][$day]['end_time'] ?? '23:00');
+                    
+                    $sanitized['time_windows'][$day] = array(
+                        'start_time' => preg_match('/^([0-1][0-9]|2[0-3]):00$/', $day_start) ? $day_start : '00:00',
+                        'end_time' => preg_match('/^([0-1][0-9]|2[0-3]):00$/', $day_end) ? $day_end : '23:00'
+                    );
+                } else {
+                    $sanitized['time_windows'][$day] = array('start_time' => '00:00', 'end_time' => '23:00');
+                }
+            }
+        } else {
+            // Populate defaults if not present
+            foreach ($valid_days as $day) {
+                $sanitized['time_windows'][$day] = array('start_time' => '00:00', 'end_time' => '23:00');
+            }
+        }
         
         // Validate time window logic
-        if (!$wrap_to_next_day) {
+        if (!$sanitized['wrap_to_next_day']) {
             $start_hour = intval(substr($sanitized['start_time'], 0, 2));
             $end_hour = intval(substr($sanitized['end_time'], 0, 2));
             
@@ -508,8 +544,12 @@ class Settings {
                             <div class="fbcn-card-body">
                                 <?php do_settings_sections('fbcn_basic_settings'); ?>
                             </div>
-                            <div class="fbcn-card-footer">
-                                <?php submit_button(__('Save Changes', 'fb-call-now'), 'primary large'); ?>
+                            <div class="fbcn-card-footer" style="display: flex; gap: 10px; align-items: center;">
+                                <?php submit_button(__('Save Changes', 'fb-call-now'), 'primary large', 'submit', false); ?>
+                                <button type="submit" name="fbcn_restore_defaults" class="button button-secondary large" formaction="" onclick="return confirm('<?php _e('Are you sure you want to restore all settings to defaults?', 'fb-call-now'); ?>');">
+                                    <?php _e('Restore Defaults', 'fb-call-now'); ?>
+                                </button>
+                                <?php wp_nonce_field('fbcn_restore_defaults_nonce', '_wpnonce', true, true); ?>
                             </div>
                         </div>
                     </form>
@@ -697,14 +737,24 @@ class Settings {
                                     <p class="description"><?php _e( 'Select which days the button should be visible.', 'fb-call-now' ); ?></p>
                                 </div>
                                 <div class="fbcn-pro-field-group">
-                                    <div class="fbcn-pro-field-label"><span class="dashicons dashicons-clock"></span><?php _e( 'Active Time Window', 'fb-call-now' ); ?></div>
-                                    <div class="fbcn-time-row">
-                                        <div class="fbcn-time-field"><label><?php _e( 'Start', 'fb-call-now' ); ?></label><select name="fbcn_pro_settings[start_time]" id="start_time" class="fbcn-time-select"><?php for ( $hour = 0; $hour < 24; $hour++ ) : $t = sprintf( '%02d:00', $hour ); ?><option value="<?php echo $t; ?>" <?php selected( $start_time, $t ); ?>><?php echo $t; ?></option><?php endfor; ?></select></div>
-                                        <div class="fbcn-time-divider"><span class="dashicons dashicons-arrow-right-alt"></span></div>
-                                        <div class="fbcn-time-field"><label><?php _e( 'End', 'fb-call-now' ); ?></label><select name="fbcn_pro_settings[end_time]" id="end_time" class="fbcn-time-select"><?php for ( $hour = 0; $hour < 24; $hour++ ) : $t = sprintf( '%02d:00', $hour ); ?><option value="<?php echo $t; ?>" <?php selected( $end_time, $t ); ?>><?php echo $t; ?></option><?php endfor; ?></select></div>
+                                    <div class="fbcn-pro-field-label">
+                                        <span class="dashicons dashicons-clock"></span><?php _e( 'Active Time Windows (Per Day)', 'fb-call-now' ); ?>
+                                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Time settings are applied using your WordPress site timezone setting.', 'fb-call-now' ); ?>" style="cursor:help; margin-left:4px; font-size:16px;"></span>
                                     </div>
-                                    <label class="fbcn-wrap-toggle"><input type="checkbox" name="fbcn_pro_settings[wrap_to_next_day]" value="1" <?php checked( $wrap_to_next_day ); ?> /><span class="fbcn-toggle-label"><?php _e( 'Wrap to Next Day', 'fb-call-now' ); ?></span></label>
-                                    <p class="description"><?php _e( 'Enable if end time should extend past midnight.', 'fb-call-now' ); ?></p>
+                                    <table class="fbcn-time-table" style="width:100%; max-width:500px; margin-bottom: 15px;">
+                                        <?php foreach ( $days as $key => $label ) : ?>
+                                        <?php $day_start = $options['time_windows'][$key]['start_time'] ?? '00:00'; ?>
+                                        <?php $day_end = $options['time_windows'][$key]['end_time'] ?? '23:00'; ?>
+                                        <tr class="fbcn-time-row" style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                                            <td style="width: 100px; font-weight: 600;"><?php echo esc_html($label); ?></td>
+                                            <td class="fbcn-time-field"><label style="display:none;"><?php _e( 'Start', 'fb-call-now' ); ?></label><select name="fbcn_pro_settings[time_windows][<?php echo $key; ?>][start_time]" class="fbcn-time-select"><?php for ( $hour = 0; $hour < 24; $hour++ ) : $t = sprintf( '%02d:00', $hour ); ?><option value="<?php echo $t; ?>" <?php selected( $day_start, $t ); ?>><?php echo $t; ?></option><?php endfor; ?></select></td>
+                                            <td class="fbcn-time-divider" style="padding-top:0;"><span class="dashicons dashicons-arrow-right-alt"></span></td>
+                                            <td class="fbcn-time-field"><label style="display:none;"><?php _e( 'End', 'fb-call-now' ); ?></label><select name="fbcn_pro_settings[time_windows][<?php echo $key; ?>][end_time]" class="fbcn-time-select"><?php for ( $hour = 0; $hour < 24; $hour++ ) : $t = sprintf( '%02d:00', $hour ); ?><option value="<?php echo $t; ?>" <?php selected( $day_end, $t ); ?>><?php echo $t; ?></option><?php endfor; ?></select></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </table>
+                                    <label class="fbcn-wrap-toggle"><input type="checkbox" name="fbcn_pro_settings[wrap_to_next_day]" value="1" <?php checked( $wrap_to_next_day ); ?> /><span class="fbcn-toggle-label"><?php _e( 'Allow time to extend past midnight (e.g. 22:00 to 02:00)', 'fb-call-now' ); ?></span></label>
+                                    <p class="description"><?php _e( 'Enable if any of your end times should extend past midnight into the next day.', 'fb-call-now' ); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -738,8 +788,12 @@ class Settings {
                             </div>
                         </div>
 
-                        <div class="fbcn-save-bar">
+                        <div class="fbcn-save-bar" style="display: flex; gap: 10px; align-items: center;">
                             <?php submit_button( __( 'Save Changes', 'fb-call-now' ), 'primary large fbcn-save-btn', 'submit', false ); ?>
+                            <button type="submit" name="fbcn_restore_defaults" class="button button-secondary large" formaction="" onclick="return confirm('<?php _e('Are you sure you want to restore all settings to defaults?', 'fb-call-now'); ?>');">
+                                <?php _e('Restore Defaults', 'fb-call-now'); ?>
+                            </button>
+                            <?php wp_nonce_field('fbcn_restore_defaults_nonce', '_wpnonce', true, true); ?>
                         </div>
                     </form>
                 </div>
@@ -833,7 +887,13 @@ class Settings {
             }
         }
         ?>
-        <input type="text" id="phone_number" name="fbcn_basic_settings[phone_number]" value="<?php echo $value; ?>" class="regular-text <?php echo $error_class; ?>" placeholder="+1-XXX-XXX-XXXX" />
+        <div class="fbcn-input-wrapper" style="position: relative; display: inline-block;">
+            <input type="text" id="phone_number" name="fbcn_basic_settings[phone_number]" value="<?php echo $value; ?>" class="regular-text <?php echo $error_class; ?>" placeholder="+1-XXX-XXX-XXXX" />
+            <div id="phone_number_tooltip" class="fbcn-tooltip" style="display: none; position: absolute; left: 105%; top: 50%; transform: translateY(-50%); background: #f87171; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 10;">
+                <?php _e('Invalid format. Use +1-XXX-XXX-XXXX', 'fb-call-now'); ?>
+                <div style="position: absolute; right: 100%; top: 50%; transform: translateY(-50%); border-width: 5px; border-style: solid; border-color: transparent #f87171 transparent transparent;"></div>
+            </div>
+        </div>
         <?php if ($error_class): ?>
             <span class="fbcn-error-icon" title="<?php _e('Invalid phone number format', 'fb-call-now'); ?>">❗</span>
         <?php endif; ?>
@@ -862,6 +922,22 @@ class Settings {
         ?>
         <input type="text" id="text_color" name="fbcn_basic_settings[text_color]" value="<?php echo $value; ?>" class="fbcn-color-picker" />
         <p class="description"><?php _e('Text color of the button label.', 'fb-call-now'); ?></p>
+        <?php
+    }
+    
+    /**
+     * Button shape field callback
+     */
+    public function button_shape_field_callback() {
+        $options = get_option('fbcn_basic_settings', Defaults::get_basic_settings());
+        $value = $options['button_shape'] ?? 'pill';
+        ?>
+        <select name="fbcn_basic_settings[button_shape]">
+            <option value="rectangular" <?php selected($value, 'rectangular'); ?>><?php _e('Rectangular', 'fb-call-now'); ?></option>
+            <option value="rounded" <?php selected($value, 'rounded'); ?>><?php _e('Rounded Corners', 'fb-call-now'); ?></option>
+            <option value="pill" <?php selected($value, 'pill'); ?>><?php _e('Pill (Fully Rounded)', 'fb-call-now'); ?></option>
+        </select>
+        <p class="description"><?php _e('Select the visual shape of the call button.', 'fb-call-now'); ?></p>
         <?php
     }
     

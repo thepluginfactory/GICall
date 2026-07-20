@@ -89,7 +89,7 @@
 
         // Update preview when settings change
         // We bind to 'change' and 'input' on text fields, and 'change' on selects
-        $('#button_text, [name="fbcn_basic_settings[horizontal_position]"], [name="fbcn_basic_settings[vertical_position]"]').on('input change', function () {
+        $('#button_text, [name="fbcn_basic_settings[button_shape]"], [name="fbcn_basic_settings[horizontal_position]"], [name="fbcn_basic_settings[vertical_position]"]').on('input change', function () {
             updatePreview();
         });
 
@@ -164,6 +164,12 @@
         // Position Logic
         var horizPos = $('[name="fbcn_basic_settings[horizontal_position]"]').val() || 'right';
         var vertPos = parseInt($('[name="fbcn_basic_settings[vertical_position]"]').val() || 10);
+        
+        // Shape Logic
+        var buttonShape = $('[name="fbcn_basic_settings[button_shape]"]').val() || 'pill';
+        var borderRadiusValue = '34px';
+        if (buttonShape === 'rectangular') borderRadiusValue = '0';
+        if (buttonShape === 'rounded') borderRadiusValue = '8px';
 
         // Calculate bottom percentage based on 1-10 scale
         // Mapping 1 (top) to 10 (bottom)
@@ -188,7 +194,7 @@
             'color': textColor,
             'padding': device === 'mobile' ? '12px 24px' : '12px 20px', // Match standard padding (Desktop: 12px 20px)
             'font-size': device === 'mobile' ? '16px' : '20px', // Match standard font size (Desktop: 20px)
-            'border-radius': '12px', // Modern SaaS radius
+            'border-radius': borderRadiusValue,
             'top': topPercent + '%',
             'font-weight': '600',
             'display': 'inline-flex', // Modern Flex
@@ -259,12 +265,10 @@
             // Remove error styling on input
             $(this).removeClass('fbcn-field-error');
             $('.fbcn-error-icon').remove();
+            $('#phone_number_tooltip').hide();
         });
     }
 
-    /**
-     * Validate phone number format
-     */
     function validatePhoneNumber($field) {
         var phoneValue = $field.val().trim();
         var phoneRegex = /^\+1-\d{3}-\d{3}-\d{4}$/;
@@ -272,10 +276,12 @@
         // Remove existing error indicators
         $field.removeClass('fbcn-field-error');
         $field.siblings('.fbcn-error-icon').remove();
+        $('#phone_number_tooltip').hide();
 
         if (phoneValue && !phoneRegex.test(phoneValue)) {
             $field.addClass('fbcn-field-error');
-            $field.after('<span class="fbcn-error-icon" title="Invalid phone number format">❗</span>');
+            // Show the tooltip
+            $('#phone_number_tooltip').show();
             return false;
         }
 
